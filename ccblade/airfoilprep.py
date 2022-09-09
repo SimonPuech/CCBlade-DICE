@@ -532,7 +532,7 @@ class Airfoil(object):
         self.polar_type = polars[0].__class__
 
     @classmethod
-    def initFromAerodynFile(cls, aerodynFile, polarType=Polar):
+    def initFromAerodynFile(cls, aerodynFile, version=15, polarType=Polar,):
         """Construct Airfoil object from AeroDyn file
 
         Parameters
@@ -543,55 +543,91 @@ class Airfoil(object):
         Returns
         -------
         obj : Airfoil
-
+        print(version)
         """
-        # initialize
-        polars = []
+        if version == 14:
+            # initialize
+            polars = []
+            # open aerodyn file
+            f = open(aerodynFile, 'r')
 
-        # open aerodyn file
-        f = open(aerodynFile, "r")
+            # skip through header
+            f.readline()
+            description = f.readline().rstrip()  # remove newline
+            #print(f.readline())
+            numTables = int(float(f.readline().split()[0]))
 
-        # skip through header
-        f.readline()
-        description = f.readline().rstrip()  # remove newline
-        f.readline()
-        numTables = int(f.readline().split()[0])
+            # loop through tables
+            for i in range(numTables):
+                # read Reynolds number
+                Re = float(f.readline().split()[0])*1e6
 
-        # loop through tables
-        for i in range(numTables):
+                # read Aerodyn parameters
+                param = [0]*8
+                for j in range(8):
+                    param[j] = float(f.readline().split()[0])
 
-            # read Reynolds number
-            Re = float(f.readline().split()[0]) * 1e6
+                alpha = []
+                cl = []
+                cd = []
+                cm = []
 
-            # read Aerodyn parameters
-            param = [0] * 8
-            for j in range(8):
-                param[j] = float(f.readline().split()[0])
+                f.readline()
+                f.readline()
 
-            alpha = []
-            cl = []
-            cd = []
-            cm = []
+                # read polar information line by line
+                while True:
+                    line = f.readline()
+                    if 'EOT' in line or line in ["\n",""]:
+                        break
+                    data = [float(s) for s in line.split()]
+                    alpha.append(data[0])
+                    cl.append(data[1])
+                    cd.append(data[2])
+                    cm.append(data[3])
 
-            # read polar information line by line
-            while True:
-                line = f.readline()
-                if "EOT" in line:
-                    break
-                data = [float(s) for s in line.split()]
-                if len(data) < 4:
-                    raise ValueError(f"Error: Expected 4 columns of data but found, {data}")
-                
-                alpha.append(data[0])
-                cl.append(data[1])
-                cd.append(data[2])
-                cm.append(data[3])
+                polars.append(polarType(Re, alpha, cl, cd, cm))
+            f.close()
+        elif version == 15:
+            # initialize
+            polars = []
 
-            polars.append(polarType(Re, alpha, cl, cd, cm))
+            # open aerodyn file
+            with open(aerodynFile, 'r') as f:
+                l = f.readline()
+                # get at the NumTabs line
+                while "NumTabs" not in l:
+                    l = f.readline()
+                NumTabs = int(l.split(" ")[0])
+                # loop through tables
+                for i in range(NumTabs):
+                    while "Re          ! Reynolds number in millions" not in l:
+                        l = f.readline()
+                    Re_i = float(l.replace(" ","").split("Re")[0])* 1e6
+                    while "NumAlf      ! Number of data lines" not in l:
+                        l = f.readline()
+                    NumAlf_i = int(l.replace(" ", "").split("NumAlf")[0])
 
-        f.close()
+                    l = f.readline()
+                    alpha = []
+                    cl = []
+                    cd = []
+                    cm = []
+                    while l[0] == "!":
+                        l = f.readline()
 
+                    # loop through tables data lines
+                    for j in range(NumAlf_i):
+                        data = [float(k) for k in l.replace("\t"," ").split(" ") if (k != "")]
+                        alpha.append(data[0])
+                        cl.append(data[1])
+                        cd.append(data[2])
+                        cm.append(data[3])
+                        l = f.readline()
+                    polars.append(polarType(Re_i, alpha, cl, cd, cm))
         return cls(polars)
+
+
 
     def getPolar(self, Re):
         """Gets a Polar object for this airfoil at the specified Reynolds number.

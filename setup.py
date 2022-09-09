@@ -7,7 +7,7 @@ import os
 os.environ['NPY_DISTUTILS_APPEND_FLAGS'] = '1'
 
 setup(
-    name='CCBlade',
+    name='CCB-dice',
     version='1.3.0',
     description='Blade element momentum aerodynamics for wind turbines',
     author='NREL WISDEM Team',

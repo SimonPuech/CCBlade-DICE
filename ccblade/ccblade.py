@@ -94,7 +94,7 @@ class CCAirfoil(object):
             self.cm_spline = RectBivariateSpline(alpha, Re, cm, kx=kx, ky=ky, s=0.0001)
 
     @classmethod
-    def initFromAerodynFile(cls, aerodynFile):
+    def initFromAerodynFile(cls, aerodynFile,version=15):
         """convenience method for initializing with AeroDyn formatted files
         Parameters
         ----------
@@ -105,8 +105,7 @@ class CCAirfoil(object):
         af : CCAirfoil
             a constructed CCAirfoil object
         """
-
-        af = Airfoil.initFromAerodynFile(aerodynFile)
+        af = Airfoil.initFromAerodynFile(aerodynFile,version)
         alpha, Re, cl, cd, cm = af.createDataGrid()
         return cls(alpha, Re, cl, cd, cm=cm)
 
