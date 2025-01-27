@@ -26,32 +26,35 @@ build_dir = os.path.join(this_dir, "build")
 
 def copy_shared_libraries():
     build_path = os.path.join(staging_dir, "ccblade")
+    print("\n=== Debug Information ===")
     print(f"this_dir: {this_dir}")
     print(f"staging_dir: {staging_dir}")
     print(f"build_dir: {build_dir}")
     print(f"build_path: {build_path}")
     print(f"cwd: {os.getcwd()}")
+    print(f"Files in build_path: {os.listdir(build_path)}")
+    print(f"Files in current dir: {os.listdir('.')}")
+    print(f"Files in ccblade dir: {os.listdir('ccblade') if os.path.exists('ccblade') else 'ccblade dir not found'}")
+
     for root, _dirs, files in os.walk(build_path):
-        print("="*40 +f"Processing {root}")
+        print(f"\n=== Processing directory: {root} ===")
+        print(f"Files in directory: {files}")
         for f in files:
-            print("="*30 +f"looping through {f}")
+            print(f"\n=== Processing file: {f} ===")
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
-                print("="*30 +f"Processing {f}")
+                print(f"Found extension module: {f}")
                 file_path = os.path.join(root, f)
                 # Get the relative path from staging_dir
                 rel_path = os.path.relpath(file_path, staging_dir)
-                new_path = rel_path  # Keep the same relative structure
-                # Ensure target directory exists
-                os.makedirs(os.path.dirname(new_path), exist_ok=True)
-                print(f"Copying build file {file_path} -> {new_path}")
-                print(f"Copying build file {file_path} -> {os.path.join(this_dir, new_path)}")
-                shutil.copy(file_path, new_path)
-                # Also copy to build/lib directory to ensure it's included in the wheel
-                # build_lib_dir = os.path.join("build", f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_version()}")
-                # build_lib_path = os.path.join(build_lib_dir, rel_path)
-                # os.makedirs(os.path.dirname(build_lib_path), exist_ok=True)
-                # print(f"Copying to build lib: {file_path} -> {build_lib_path}")
-                # shutil.copy(file_path, build_lib_path)
+                # Copy to package directory
+                package_path = os.path.join("ccblade", os.path.basename(file_path))
+                os.makedirs(os.path.dirname(package_path), exist_ok=True)
+                print(f"Copying from: {file_path}")
+                print(f"Copying to: {package_path}")
+                print(f"File exists at source: {os.path.exists(file_path)}")
+                shutil.copy(file_path, package_path)
+                print(f"File exists at destination: {os.path.exists(package_path)}")
+                print(f"File size at destination: {os.path.getsize(package_path)}")
 
 #######
 class MesonExtension(setuptools.Extension):
@@ -75,7 +78,7 @@ class MesonBuildExt(build_ext):
             super().build_extension(ext)
 
         else:
-
+            print("\n=== Starting Meson Build ===")
             # Ensure that Meson is present and working
             try:
                 self.spawn(["meson", "--version"])
@@ -107,18 +110,23 @@ class MesonBuildExt(build_ext):
 
             self.spawn(configure_call)
             self.spawn(build_call)
+            print("\n=== Meson Build Complete, Starting Copy ===")
             copy_shared_libraries()
+            print("\n=== Copy Complete ===")
+            print(f"Final contents of ccblade dir: {os.listdir('ccblade') if os.path.exists('ccblade') else 'ccblade dir not found'}")
 
             
 if __name__ == "__main__":
     setuptools.setup(cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
                      distclass=BinaryDistribution,
                      ext_modules=[ MesonExtension("ccblade", this_dir) ],
+                     packages=["ccblade"],
+                     package_dir={"ccblade": "ccblade"},
                      package_data={
                          "ccblade": [
-                             "_bem.*.so",  # Unix/Linux
-                             "_bem.*.pyd",  # Windows
-                             "_bem.*.dylib",  # macOS
+                             "_bem*.so",  # Unix/Linux
+                             "_bem*.pyd",  # Windows
+                             "_bem*.dylib",  # macOS
                          ]
                      },
                      include_package_data=True,
