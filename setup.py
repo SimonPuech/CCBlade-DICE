@@ -4,6 +4,7 @@ import shutil
 import platform
 import setuptools
 from setuptools.command.build_ext import build_ext
+from setuptools.command.build_py import build_py
 
 #######
 # This forces wheels to be platform specific
@@ -124,23 +125,44 @@ class MesonBuildExt(build_ext):
             print("\n=== Copy Complete ===")
             print(f"Final contents of ccblade dir: {os.listdir('ccblade') if os.path.exists('ccblade') else 'ccblade dir not found'}")
 
-            
+class CustomBuildPy(build_py):
+    def run(self):
+        # Run the standard build_py first
+        build_py.run(self)
+        
+        # Now copy the extension module
+        if hasattr(self, 'build_lib'):
+            print("\n=== Custom build step to copy extension ===")
+            build_path = os.path.join(staging_dir, "ccblade")
+            if os.path.exists(build_path):
+                for f in os.listdir(build_path):
+                    if f.startswith('_bem') and f.endswith(('.so', '.pyd', '.dylib')):
+                        src = os.path.join(build_path, f)
+                        dst = os.path.join(self.build_lib, 'ccblade', f)
+                        os.makedirs(os.path.dirname(dst), exist_ok=True)
+                        print(f"Copying extension from {src} to {dst}")
+                        shutil.copy2(src, dst)
+                        print(f"Extension exists at destination: {os.path.exists(dst)}")
+                        print(f"Extension size at destination: {os.path.getsize(dst)}")
+
 if __name__ == "__main__":
-    setuptools.setup(cmdclass={
-        "bdist_wheel": bdist_wheel,
-        "build_ext": MesonBuildExt
-    },
-    distclass=BinaryDistribution,
-    ext_modules=[MesonExtension("ccblade", this_dir)],
-    packages=["ccblade"],
-    package_dir={"ccblade": "ccblade"},
-    package_data={
-        "ccblade": [
-            "*_bem*.so",  # Unix/Linux
-            "*_bem*.pyd",  # Windows
-            "*_bem*.dylib",  # macOS
-        ]
-    },
-    include_package_data=True,
-    zip_safe=False,  # Required for native extensions
+    setuptools.setup(
+        cmdclass={
+            "bdist_wheel": bdist_wheel,
+            "build_ext": MesonBuildExt,
+            "build_py": CustomBuildPy,
+        },
+        distclass=BinaryDistribution,
+        ext_modules=[MesonExtension("ccblade", this_dir)],
+        packages=["ccblade"],
+        package_dir={"ccblade": "ccblade"},
+        package_data={
+            "ccblade": [
+                "*_bem*.so",  # Unix/Linux
+                "*_bem*.pyd",  # Windows
+                "*_bem*.dylib",  # macOS
+            ]
+        },
+        include_package_data=True,
+        zip_safe=False,  # Required for native extensions
     )
