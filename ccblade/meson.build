@@ -32,10 +32,7 @@ bem_source = custom_target('bemmodule.c',
 			    '@INPUT@', '-m', '_bem', '--lower', '--build-dir', 'ccblade']
                             )
 
-py3.extension_module('_bem',
-                    'src/bem.f90',
-                bem_source,
-                fortranobject_c,
+py3.extension_module('_bem', ['src/bem.f90', bem_source, fortranobject_c],
                 include_directories: inc_np,
                 dependencies : py3_dep,
                 subdir: 'ccblade',

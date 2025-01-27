@@ -35,7 +35,14 @@ else
 endif
 py3_dep = py3.dependency()
 
-message(py3.path())
-message(py3.get_install_dir())
+# Get Python installation directory
+message('Python path: ' + py3.path())
+message('Python install dir: ' + py3.get_install_dir())
+
+# Make sure numpy is available
+py3.extension_module('_bem',
+                    'ccblade/src/bem.f90',
+                    install: true,
+                    subdir: 'ccblade')
 
 subdir('ccblade')
