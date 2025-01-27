@@ -5,6 +5,7 @@ import platform
 import setuptools
 from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
+import sys
 
 #######
 # This forces wheels to be platform specific
@@ -65,6 +66,11 @@ def copy_shared_libraries():
                 os.makedirs(os.path.dirname(build_lib_path), exist_ok=True)
                 print(f"Copying to build lib: {build_lib_path}")
                 shutil.copy(file_path, build_lib_path)
+
+    print("\n=== Additional Debug Information ===")
+    print(f"Python executable: {sys.executable}")
+    print(f"Platform: {platform.platform()}")
+    print(f"Python version: {platform.python_version()}")
 
 #######
 class MesonExtension(setuptools.Extension):
@@ -127,25 +133,61 @@ class MesonBuildExt(build_ext):
 
 class CustomBuildPy(build_py):
     def run(self):
-        # Run the standard build_py first
+        print("\n=== Starting CustomBuildPy ===")
         build_py.run(self)
         
         # Now copy the extension module
         if hasattr(self, 'build_lib'):
-            print("\n=== Custom build step to copy extension ===")
-            build_path = os.path.join(staging_dir, "ccblade")
-            if os.path.exists(build_path):
-                for f in os.listdir(build_path):
-                    if f.startswith('_bem') and f.endswith(('.so', '.pyd', '.dylib')):
-                        src = os.path.join(build_path, f)
-                        dst = os.path.join(self.build_lib, 'ccblade', f)
-                        os.makedirs(os.path.dirname(dst), exist_ok=True)
-                        print(f"Copying extension from {src} to {dst}")
-                        shutil.copy2(src, dst)
-                        print(f"Extension exists at destination: {os.path.exists(dst)}")
-                        print(f"Extension size at destination: {os.path.getsize(dst)}")
+            print(f"\n=== Custom build step to copy extension ===")
+            print(f"Build lib directory: {self.build_lib}")
+            print(f"Current directory: {os.getcwd()}")
+            
+            # Try multiple source locations
+            possible_sources = [
+                os.path.join(staging_dir, "ccblade"),
+                "ccblade",
+                os.path.join("build", "lib", "ccblade"),
+                os.path.join("build", "lib.linux-x86_64-cpython-310", "ccblade"),
+            ]
+            
+            for source_dir in possible_sources:
+                print(f"\nChecking source directory: {source_dir}")
+                if os.path.exists(source_dir):
+                    print(f"Directory exists. Contents: {os.listdir(source_dir)}")
+                    for f in os.listdir(source_dir):
+                        if f.startswith('_bem') and f.endswith(('.so', '.pyd', '.dylib')):
+                            src = os.path.join(source_dir, f)
+                            # Copy to multiple destinations to ensure it's included
+                            destinations = [
+                                os.path.join(self.build_lib, 'ccblade', f),
+                                os.path.join('build', 'lib.linux-x86_64-cpython-310', 'ccblade', f),
+                                os.path.join('build', 'bdist.linux-x86_64', 'wheel', 'ccblade', f),
+                            ]
+                            
+                            for dst in destinations:
+                                try:
+                                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                                    print(f"Copying extension from {src} to {dst}")
+                                    shutil.copy2(src, dst)
+                                    if os.path.exists(dst):
+                                        print(f"Success! File exists at {dst} with size {os.path.getsize(dst)}")
+                                    else:
+                                        print(f"Warning: Copy seemed to succeed but file not found at {dst}")
+                                except Exception as e:
+                                    print(f"Warning: Failed to copy to {dst}: {e}")
+                else:
+                    print(f"Directory does not exist: {source_dir}")
+
+            print("\n=== Final build_lib contents ===")
+            if os.path.exists(self.build_lib):
+                for root, dirs, files in os.walk(self.build_lib):
+                    print(f"\nDirectory: {root}")
+                    print(f"Files: {files}")
+            else:
+                print(f"build_lib directory does not exist: {self.build_lib}")
 
 if __name__ == "__main__":
+    print("\n=== Starting setup process ===")
     setuptools.setup(
         cmdclass={
             "bdist_wheel": bdist_wheel,
@@ -163,6 +205,10 @@ if __name__ == "__main__":
                 "*_bem*.dylib",  # macOS
             ]
         },
+        data_files=[
+            ('ccblade', ['ccblade/_bem.cpython-310-x86_64-linux-gnu.so']),
+        ],
         include_package_data=True,
-        zip_safe=False,  # Required for native extensions
+        zip_safe=False,
     )
+    print("\n=== Setup process complete ===")
