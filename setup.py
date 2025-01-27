@@ -26,10 +26,11 @@ build_dir = os.path.join(this_dir, "build")
 
 def copy_shared_libraries():
     build_path = os.path.join(staging_dir, "ccblade")
-    print("="*50 +f"Copying shared libraries from {build_path}")
     print(f"this_dir: {this_dir}")
     print(f"staging_dir: {staging_dir}")
     print(f"build_dir: {build_dir}")
+    print(f"build_path: {build_path}")
+    print(f"cwd: {os.getcwd()}")
     for root, _dirs, files in os.walk(build_path):
         print("="*40 +f"Processing {root}")
         for f in files:
