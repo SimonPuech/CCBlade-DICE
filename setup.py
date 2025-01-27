@@ -27,10 +27,13 @@ build_dir = os.path.join(this_dir, "build")
 def copy_shared_libraries():
     build_path = os.path.join(staging_dir, "ccblade")
     print("="*50 +f"Copying shared libraries from {build_path}")
+    print(f"this_dir: {this_dir}")
+    print(f"staging_dir: {staging_dir}")
+    print(f"build_dir: {build_dir}")
     for root, _dirs, files in os.walk(build_path):
         print("="*40 +f"Processing {root}")
         for f in files:
-            print("="*30 +f"Processing {f}")
+            print("="*30 +f"looping through {f}")
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 print("="*30 +f"Processing {f}")
                 file_path = os.path.join(root, f)
@@ -40,7 +43,7 @@ def copy_shared_libraries():
                 # Ensure target directory exists
                 os.makedirs(os.path.dirname(new_path), exist_ok=True)
                 print(f"Copying build file {file_path} -> {new_path}")
-                print(f"Copying build file {file_path} -> {new_path}")
+                print(f"Copying build file {file_path} -> {os.path.join(this_dir, new_path)}")
                 shutil.copy(file_path, new_path)
                 # Also copy to build/lib directory to ensure it's included in the wheel
                 build_lib_dir = os.path.join("build", f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_version()}")
