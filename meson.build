@@ -45,4 +45,10 @@ py3.extension_module('_bem',
                     install: true,
                     subdir: 'ccblade')
 
+# Install the built extension module to the build directory
+meson.add_install_script('meson', 'install', 
+                        '--destdir', meson.current_build_dir(),
+                        '--skip-subprojects')
+
+
 subdir('ccblade')
