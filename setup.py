@@ -50,6 +50,7 @@ def copy_shared_libraries():
                 build_lib_dir = os.path.join("build", f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_version()}")
                 build_lib_path = os.path.join(build_lib_dir, rel_path)
                 os.makedirs(os.path.dirname(build_lib_path), exist_ok=True)
+                print(f"Copying to build lib: {file_path} -> {build_lib_path}")
                 shutil.copy(file_path, build_lib_path)
 
 #######
@@ -113,5 +114,12 @@ if __name__ == "__main__":
     setuptools.setup(cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
                      distclass=BinaryDistribution,
                      ext_modules=[ MesonExtension("ccblade", this_dir) ],
-                     package_data={"ccblade": ["_bem.*.so"]},
+                     package_data={
+                         "ccblade": [
+                             "_bem.*.so",  # Unix/Linux
+                             "_bem.*.pyd",  # Windows
+                             "_bem.*.dylib",  # macOS
+                         ]
+                     },
+                     include_package_data=True,
                      )
