@@ -29,6 +29,7 @@ def copy_shared_libraries():
     for root, _dirs, files in os.walk(build_path):
         for f in files:
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
+                print("="*50 +f"Processing {f}")
                 file_path = os.path.join(root, f)
                 # Get the relative path from staging_dir
                 rel_path = os.path.relpath(file_path, staging_dir)
