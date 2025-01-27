@@ -1,31 +1,98 @@
 #!/usr/bin/env python
-# encoding: utf-8
-
-from numpy.distutils.core import setup, Extension
 import os
+import shutil
+import platform
+import setuptools
+from setuptools.command.build_ext import build_ext
 
-os.environ['NPY_DISTUTILS_APPEND_FLAGS'] = '1'
+#######
+# This forces wheels to be platform specific
+from setuptools.dist import Distribution
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
-setup(
-    name='CCB-dice',
-    version='1.3.0',
-    description='Blade element momentum aerodynamics for wind turbines',
-    author='NREL WISDEM Team',
-    author_email='systems.engineering@nrel.gov',
-    #package_dir={'': 'src'},
-    #py_modules=['ccblade'],
-    package_data={'ccblade': []},
-    packages=['ccblade'],
-    install_requires=[
-        "numpy",
-        "openmdao>=3.4",
-        "scipy",
-    ],
-    python_requires=">=3.7",
-    # test_suite='test.test_ccblade.py',
-    license='Apache License, Version 2.0',
-    ext_modules=[Extension('ccblade._bem',
-                           sources=[os.path.join('ccblade','src','bem.f90')],
-                           extra_compile_args=['-O2','-fPIC','-std=c11'])],
-    zip_safe=False
-)
+class bdist_wheel(_bdist_wheel):
+    def finalize_options(self):
+        _bdist_wheel.finalize_options(self)
+        self.root_is_pure = False
+
+class BinaryDistribution(Distribution):
+    """Distribution which always forces a binary package with platform name"""
+    def has_ext_modules(foo):
+        return True
+#######
+this_dir = os.path.abspath(os.path.dirname(__file__))
+staging_dir = os.path.join(this_dir, "meson_build")
+build_dir = os.path.join(this_dir, "build")
+
+def copy_shared_libraries():
+    build_path = os.path.join(staging_dir, "ccblade")
+    for root, _dirs, files in os.walk(build_path):
+        for f in files:
+            if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
+                file_path = os.path.join(root, f)
+                new_path = str(file_path).replace(staging_dir + os.sep, "")
+                print(f"Copying build file {file_path} -> {new_path}")
+                shutil.copy(file_path, new_path)
+
+#######
+class MesonExtension(setuptools.Extension):
+
+    def __init__(self, name, sourcedir="", **kwa):
+        setuptools.Extension.__init__(self, name, sources=[], **kwa)
+        self.sourcedir = os.path.abspath(sourcedir)
+
+class MesonBuildExt(build_ext):
+    
+    def copy_extensions_to_source(self):
+        newext = []
+        for ext in self.extensions:
+            if isinstance(ext, MesonExtension): continue
+            newext.append( ext )
+        self.extensions = newext
+        super().copy_extensions_to_source()
+    
+    def build_extension(self, ext):
+        if not isinstance(ext, MesonExtension):
+            super().build_extension(ext)
+
+        else:
+
+            # Ensure that Meson is present and working
+            try:
+                self.spawn(["meson", "--version"])
+            except OSError:
+                raise RuntimeError("Cannot find meson executable")
+            
+            # check if meson extra args are specified
+            meson_args = ""
+            if "MESON_ARGS" in os.environ:
+                meson_args = os.environ["MESON_ARGS"]
+
+            if platform.system() == "Windows":
+                if "FC" not in os.environ:
+                    os.environ["FC"] = "gfortran"
+                if "CC" not in os.environ:
+                    os.environ["CC"] = "gcc"
+
+            purelibdir = "."
+            configure_call = ["meson", "setup", staging_dir, "--wipe",
+                          f"-Dpython.purelibdir={purelibdir}", f"--prefix={build_dir}", 
+                          f"-Dpython.platlibdir={purelibdir}"] + meson_args.split()
+            configure_call = [m for m in configure_call if m.strip() != ""]
+            print(configure_call)
+
+            build_call = ["meson", "compile", "-vC", staging_dir]
+            print(build_call)
+
+            self.build_temp = build_dir
+
+            self.spawn(configure_call)
+            self.spawn(build_call)
+            copy_shared_libraries()
+
+            
+if __name__ == "__main__":
+    setuptools.setup(cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
+                     distclass=BinaryDistribution,
+                     ext_modules=[ MesonExtension("ccblade", this_dir) ],
+                     )
