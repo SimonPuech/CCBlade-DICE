@@ -1,5 +1,5 @@
 # Much of this is from SciPy
-message('Meason build !')
+
 project(
   'ccblade',
   'c',
