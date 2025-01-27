@@ -30,7 +30,11 @@ def copy_shared_libraries():
         for f in files:
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 file_path = os.path.join(root, f)
-                new_path = str(file_path).replace(staging_dir + os.sep, "")
+                # Get the relative path from staging_dir
+                rel_path = os.path.relpath(file_path, staging_dir)
+                new_path = rel_path  # Keep the same relative structure
+                # Ensure target directory exists
+                os.makedirs(os.path.dirname(new_path), exist_ok=True)
                 print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
 
