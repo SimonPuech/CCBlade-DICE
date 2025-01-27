@@ -37,6 +37,11 @@ def copy_shared_libraries():
                 os.makedirs(os.path.dirname(new_path), exist_ok=True)
                 print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
+                # Also copy to build/lib directory to ensure it's included in the wheel
+                build_lib_dir = os.path.join("build", f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_version()}")
+                build_lib_path = os.path.join(build_lib_dir, rel_path)
+                os.makedirs(os.path.dirname(build_lib_path), exist_ok=True)
+                shutil.copy(file_path, build_lib_path)
 
 #######
 class MesonExtension(setuptools.Extension):
