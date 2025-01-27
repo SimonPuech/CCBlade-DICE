@@ -43,8 +43,7 @@ message('Python install dir: ' + py3.get_install_dir())
 bem_ext = py3.extension_module('_bem',
                     'ccblade/src/bem.f90',
                     install: true,
-                    install_dir: py3.get_install_dir() / 'ccblade',
-                    subdir: 'ccblade')
+                    install_dir: py3.get_install_dir() / 'ccblade')
 
 # Install the built extension module to the build directory
 meson.add_install_script('meson', 'install',
