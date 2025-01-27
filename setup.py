@@ -55,6 +55,15 @@ def copy_shared_libraries():
                 shutil.copy(file_path, package_path)
                 print(f"File exists at destination: {os.path.exists(package_path)}")
                 print(f"File size at destination: {os.path.getsize(package_path)}")
+                
+                # Also copy to build/lib directory
+                build_lib_dir = os.path.join("build", "lib")
+                if not os.path.exists(build_lib_dir):
+                    os.makedirs(build_lib_dir)
+                build_lib_path = os.path.join(build_lib_dir, "ccblade", os.path.basename(file_path))
+                os.makedirs(os.path.dirname(build_lib_path), exist_ok=True)
+                print(f"Copying to build lib: {build_lib_path}")
+                shutil.copy(file_path, build_lib_path)
 
 #######
 class MesonExtension(setuptools.Extension):
@@ -117,17 +126,21 @@ class MesonBuildExt(build_ext):
 
             
 if __name__ == "__main__":
-    setuptools.setup(cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
-                     distclass=BinaryDistribution,
-                     ext_modules=[ MesonExtension("ccblade", this_dir) ],
-                     packages=["ccblade"],
-                     package_dir={"ccblade": "ccblade"},
-                     package_data={
-                         "ccblade": [
-                             "_bem*.so",  # Unix/Linux
-                             "_bem*.pyd",  # Windows
-                             "_bem*.dylib",  # macOS
-                         ]
-                     },
-                     include_package_data=True,
-                     )
+    setuptools.setup(cmdclass={
+        "bdist_wheel": bdist_wheel,
+        "build_ext": MesonBuildExt
+    },
+    distclass=BinaryDistribution,
+    ext_modules=[MesonExtension("ccblade", this_dir)],
+    packages=["ccblade"],
+    package_dir={"ccblade": "ccblade"},
+    package_data={
+        "ccblade": [
+            "*_bem*.so",  # Unix/Linux
+            "*_bem*.pyd",  # Windows
+            "*_bem*.dylib",  # macOS
+        ]
+    },
+    include_package_data=True,
+    zip_safe=False,  # Required for native extensions
+    )
