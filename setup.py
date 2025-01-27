@@ -31,10 +31,6 @@ def copy_shared_libraries():
     print(f"build_dir: {build_dir}")
     print(f"build_path: {build_path}")
     print(f"cwd: {os.getcwd()}")
-    
-    # First, ensure ccblade package directory exists
-    os.makedirs("ccblade", exist_ok=True)
-    
     for root, _dirs, files in os.walk(build_path):
         print("="*40 +f"Processing {root}")
         for f in files:
@@ -42,17 +38,18 @@ def copy_shared_libraries():
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 print("="*30 +f"Processing {f}")
                 file_path = os.path.join(root, f)
-                
-                # Copy to package directory
-                package_path = os.path.join("ccblade", f)
-                print(f"Copying to package: {file_path} -> {package_path}")
-                shutil.copy(file_path, package_path)
-                
-                # Copy to build/lib directory
-                build_lib_dir = os.path.join("build", f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_version()}", "ccblade")
-                os.makedirs(build_lib_dir, exist_ok=True)
-                build_lib_path = os.path.join(build_lib_dir, f)
-                print(f"Copying to build: {file_path} -> {build_lib_path}")
+                # Get the relative path from staging_dir
+                rel_path = os.path.relpath(file_path, staging_dir)
+                new_path = rel_path  # Keep the same relative structure
+                # Ensure target directory exists
+                os.makedirs(os.path.dirname(new_path), exist_ok=True)
+                print(f"Copying build file {file_path} -> {new_path}")
+                print(f"Copying build file {file_path} -> {os.path.join(this_dir, new_path)}")
+                shutil.copy(file_path, new_path)
+                # Also copy to build/lib directory to ensure it's included in the wheel
+                build_lib_dir = os.path.join("build", f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_version()}")
+                build_lib_path = os.path.join(build_lib_dir, rel_path)
+                os.makedirs(os.path.dirname(build_lib_path), exist_ok=True)
                 shutil.copy(file_path, build_lib_path)
 
 #######
@@ -113,12 +110,8 @@ class MesonBuildExt(build_ext):
 
             
 if __name__ == "__main__":
-    setuptools.setup(
-        cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
-        distclass=BinaryDistribution,
-        ext_modules=[MesonExtension("ccblade", this_dir)],
-        package_data={
-            'ccblade': ['_bem.*'],  # Include the extension module
-        },
-        include_package_data=True,
-    )
+    setuptools.setup(cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
+                     distclass=BinaryDistribution,
+                     ext_modules=[ MesonExtension("ccblade", this_dir) ],
+                     package_data={"ccblade": ["_bem.*.so"]},
+                     )
