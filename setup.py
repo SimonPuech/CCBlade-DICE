@@ -30,40 +30,37 @@ def copy_shared_libraries():
         for f in files:
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 file_path = os.path.join(root, f)
-                new_path = str(file_path).replace(staging_dir + os.sep, "")
+                # Ensure we maintain the package structure
+                rel_path = os.path.relpath(root, staging_dir)
+                target_dir = rel_path
+                os.makedirs(target_dir, exist_ok=True)
+                new_path = os.path.join(target_dir, f)
                 print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
 
-#######
 class MesonExtension(setuptools.Extension):
-
     def __init__(self, name, sourcedir="", **kwa):
         setuptools.Extension.__init__(self, name, sources=[], **kwa)
         self.sourcedir = os.path.abspath(sourcedir)
 
 class MesonBuildExt(build_ext):
-    
     def copy_extensions_to_source(self):
         newext = []
         for ext in self.extensions:
             if isinstance(ext, MesonExtension): continue
-            newext.append( ext )
+            newext.append(ext)
         self.extensions = newext
         super().copy_extensions_to_source()
     
     def build_extension(self, ext):
         if not isinstance(ext, MesonExtension):
             super().build_extension(ext)
-
         else:
-
-            # Ensure that Meson is present and working
             try:
                 self.spawn(["meson", "--version"])
             except OSError:
                 raise RuntimeError("Cannot find meson executable")
             
-            # check if meson extra args are specified
             meson_args = ""
             if "MESON_ARGS" in os.environ:
                 meson_args = os.environ["MESON_ARGS"]
@@ -79,20 +76,19 @@ class MesonBuildExt(build_ext):
                           f"-Dpython.purelibdir={purelibdir}", f"--prefix={build_dir}", 
                           f"-Dpython.platlibdir={purelibdir}"] + meson_args.split()
             configure_call = [m for m in configure_call if m.strip() != ""]
-            print(configure_call)
 
             build_call = ["meson", "compile", "-vC", staging_dir]
-            print(build_call)
 
             self.build_temp = build_dir
-
             self.spawn(configure_call)
             self.spawn(build_call)
             copy_shared_libraries()
 
-            
 if __name__ == "__main__":
-    setuptools.setup(cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
-                     distclass=BinaryDistribution,
-                     ext_modules=[ MesonExtension("ccblade", this_dir) ],
-                     )
+    setuptools.setup(
+        cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
+        distclass=BinaryDistribution,
+        ext_modules=[MesonExtension("ccblade", this_dir)],
+        package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},  # Include binary extensions
+        include_package_data=True,
+    )

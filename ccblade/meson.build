@@ -38,3 +38,6 @@ py3.extension_module('_bem', ['src/bem.f90', bem_source, fortranobject_c],
                 subdir: 'ccblade',
 		link_language: 'fortran',
                 install : true)
+
+# Ensure the built extension is copied to the right location
+meson.add_install_script('meson', 'install', '--destdir', meson.current_build_dir())
