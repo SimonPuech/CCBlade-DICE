@@ -96,15 +96,10 @@ class MesonBuildExt(build_ext):
                 if "CC" not in os.environ:
                     os.environ["CC"] = "gcc"
 
-            purelibdir = self.get_ext_fullpath(ext.name)
-            purelibdir = os.path.dirname(purelibdir)
-
-            configure_call = [
-                "meson", "setup", staging_dir, "--wipe",
-                f"-Dpython.purelibdir={purelibdir}",
-                f"--prefix={build_dir}",
-                f"-Dpython.platlibdir={purelibdir}"
-            ] + meson_args.split()
+            purelibdir = "."
+            configure_call = ["meson", "setup", staging_dir, "--wipe",
+                          f"-Dpython.purelibdir={purelibdir}", f"--prefix={build_dir}", 
+                          f"-Dpython.platlibdir={purelibdir}"] + meson_args.split()
             configure_call = [m for m in configure_call if m.strip() != ""]
             print(configure_call)
 
@@ -125,12 +120,12 @@ if __name__ == "__main__":
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
         ext_modules=[MesonExtension("ccblade", this_dir)],
-        package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
-        include_package_data=True,
-        packages=['ccblade'],
-        install_requires=[
-            'numpy>=1.19.0',
-            'scipy>=1.6.0',
-            'openmdao>=3.2.0'
-        ],
+        # package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
+        # include_package_data=True,
+        # packages=['ccblade'],
+        # install_requires=[
+        #     'numpy>=1.19.0',
+        #     'scipy>=1.6.0',
+        #     'openmdao>=3.2.0'
+        # ],
     )
