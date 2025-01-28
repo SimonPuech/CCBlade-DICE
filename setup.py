@@ -28,7 +28,7 @@ def copy_shared_libraries():
     build_path = os.path.join(staging_dir, "ccblade")
     for root, _dirs, files in os.walk(build_path):
         for f in files:
-            if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
+            if f.startswith("_bem") and f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 file_path = os.path.join(root, f)
                 # Ensure we maintain the package structure
                 rel_path = os.path.relpath(root, staging_dir)
@@ -102,5 +102,10 @@ if __name__ == "__main__":
         ext_modules=[MesonExtension("ccblade", this_dir)],
         package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
         include_package_data=True,
-        packages=['ccblade'],  # Explicitly list the package
+        packages=['ccblade'],
+        install_requires=[
+            'numpy>=1.19.0',
+            'scipy>=1.6.0',
+            'openmdao>=3.2.0'
+        ],
     )

@@ -41,12 +41,26 @@ bem_ext = py3.extension_module('_bem',
                 link_language: 'fortran',
                 install : true)
 
+# Get Python extension suffix using a custom target
+suffix = custom_target('get_suffix',
+                      output: 'suffix',
+                      command: [
+                          py3,
+                          '-c',
+                          'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"), end="")'
+                      ],
+                      capture: true)
+
 # Install the extension module
 meson.add_install_script('python3', '-c', '''
 import os
 import shutil
-src = os.path.join('@0@', 'ccblade', '_bem@1@')
-dst = os.path.join('@CURRENT_SOURCE_DIR@', 'ccblade')
+import sysconfig
+
+ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
+src = os.path.join("@0@", "ccblade", "_bem" + ext_suffix)
+dst = os.path.join("@CURRENT_SOURCE_DIR@", "ccblade")
 os.makedirs(dst, exist_ok=True)
-shutil.copy2(src, dst)
-'''.format(meson.current_build_dir(), py3.extension_suffix()))
+if os.path.exists(src):
+    shutil.copy2(src, dst)
+'''.format(meson.current_build_dir()))
