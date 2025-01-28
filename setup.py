@@ -36,7 +36,18 @@ def copy_shared_libraries():
                 os.makedirs(target_dir, exist_ok=True)
                 new_path = os.path.join(target_dir, f)
                 print(f"Copying build file {file_path} -> {new_path}")
-                shutil.copy(file_path, new_path)
+                shutil.copy2(file_path, new_path)
+    
+    # Also copy from source directory if extension exists there
+    source_path = os.path.join(this_dir, "ccblade")
+    if os.path.exists(source_path):
+        for f in os.listdir(source_path):
+            if f.startswith("_bem") and f.endswith((".so", ".pyd", ".dll")):
+                src = os.path.join(source_path, f)
+                dst = os.path.join("ccblade", f)
+                print(f"Copying extension {src} -> {dst}")
+                os.makedirs("ccblade", exist_ok=True)
+                shutil.copy2(src, dst)
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
@@ -89,6 +100,7 @@ if __name__ == "__main__":
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
         ext_modules=[MesonExtension("ccblade", this_dir)],
-        package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},  # Include binary extensions
+        package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
         include_package_data=True,
+        packages=['ccblade'],  # Explicitly list the package
     )

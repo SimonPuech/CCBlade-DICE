@@ -32,12 +32,21 @@ bem_source = custom_target('bemmodule.c',
 			    '@INPUT@', '-m', '_bem', '--lower', '--build-dir', '@OUTDIR@']
                             )
 
-py3.extension_module('_bem', ['src/bem.f90', bem_source, fortranobject_c],
+# Build the extension module
+bem_ext = py3.extension_module('_bem',
+                ['src/bem.f90', bem_source, fortranobject_c],
                 include_directories: inc_np,
                 dependencies : py3_dep,
                 subdir: 'ccblade',
-		link_language: 'fortran',
+                link_language: 'fortran',
                 install : true)
 
-# Ensure the built extension is copied to the right location
-meson.add_install_script('meson', 'install', '--destdir', meson.current_build_dir())
+# Install the extension module
+meson.add_install_script('python3', '-c', '''
+import os
+import shutil
+src = os.path.join('@0@', 'ccblade', '_bem@1@')
+dst = os.path.join('@CURRENT_SOURCE_DIR@', 'ccblade')
+os.makedirs(dst, exist_ok=True)
+shutil.copy2(src, dst)
+'''.format(meson.current_build_dir(), py3.extension_suffix()))
