@@ -38,27 +38,4 @@ bem_ext = py3.extension_module('_bem',
                 include_directories: inc_np,
                 dependencies : py3_dep,
                 link_language: 'fortran',
-                install : true,
-                install_dir: py3.get_install_dir())
-
-# Create ccblade directory if it doesn't exist
-run_command('mkdir', '-p', 'ccblade', check: false)
-
-# Install script to ensure the module is in the right place
-meson.add_install_script('python3', '-c', '''
-import os
-import shutil
-import glob
-
-build_dir = os.path.join("@MESON_BUILD_ROOT@", "ccblade")
-install_dir = os.path.join("@MESON_INSTALL_PREFIX@", "ccblade")
-
-os.makedirs(install_dir, exist_ok=True)
-
-# Find and copy the extension module
-for ext_file in glob.glob(os.path.join(build_dir, "_bem.*")):
-    if os.path.isfile(ext_file):
-        dst = os.path.join(install_dir, os.path.basename(ext_file))
-        print(f"Installing {ext_file} -> {dst}")
-        shutil.copy2(ext_file, dst)
-''')
+                install : true)
