@@ -41,6 +41,10 @@ bem_ext = py3.extension_module('_bem',
                 link_language: 'fortran',
                 install : true)
 
+# Install to the Python package directory
+install_data(bem_ext,
+            install_dir: py3.get_install_dir() / 'ccblade')
+
 # Get Python extension suffix using a custom target
 suffix = custom_target('get_suffix',
                       output: 'suffix',
