@@ -43,20 +43,31 @@ def copy_shared_libraries():
     print(f"DEBUG: Found extension files: {ext_files}")
     
     for ext_path in ext_files:
-        if os.path.isfile(ext_path):
+        if os.path.isfile(ext_path) and not ext_path.endswith('.p'):  # Skip .p files
             # Get the extension file name
             ext_name = os.path.basename(ext_path)
             print(f"DEBUG: Processing extension: {ext_name}")
             
-            # Create target directory if it doesn't exist
+            # Create target directories
             os.makedirs("ccblade", exist_ok=True)
-            # Copy the extension
+            os.makedirs(os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade"), exist_ok=True)
+            
+            # Copy to both locations
             target_path = os.path.join("ccblade", ext_name)
-            print(f"DEBUG: Target path: {target_path}")
-            print(f"DEBUG: Target path absolute: {os.path.abspath(target_path)}")
-            print(f"Copying extension {ext_path} -> {target_path}")
+            build_target = os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade", ext_name)
+            
+            print(f"DEBUG: Copying to source dir: {target_path}")
             shutil.copy2(ext_path, target_path)
-            print(f"DEBUG: File exists after copy: {os.path.exists(target_path)}")
+            print(f"DEBUG: Copying to build dir: {build_target}")
+            shutil.copy2(ext_path, build_target)
+            
+            # Also copy to wheel build directory if it exists
+            wheel_dir = os.path.join(build_dir, "bdist.linux-x86_64", "wheel", "ccblade")
+            if os.path.exists(os.path.dirname(wheel_dir)):
+                os.makedirs(wheel_dir, exist_ok=True)
+                wheel_target = os.path.join(wheel_dir, ext_name)
+                print(f"DEBUG: Copying to wheel dir: {wheel_target}")
+                shutil.copy2(ext_path, wheel_target)
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
