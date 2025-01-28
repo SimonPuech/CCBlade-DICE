@@ -35,20 +35,7 @@ else
 endif
 py3_dep = py3.dependency()
 
-# Get Python installation directory
-message('Python path: ' + py3.path())
-message('Python install dir: ' + py3.get_install_dir())
-
-# Make sure numpy is available
-py3.extension_module('_bem',
-                    'ccblade/src/bem.f90',
-                    install: true,
-                    subdir: 'ccblade')
-
-# Install the built extension module to the build directory
-meson.add_install_script('meson', 'install', 
-                        '--destdir', meson.current_build_dir(),
-                        '--skip-subprojects')
-
+message(py3.path())
+message(py3.get_install_dir())
 
 subdir('ccblade')

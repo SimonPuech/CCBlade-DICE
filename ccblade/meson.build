@@ -29,13 +29,15 @@ bem_source = custom_target('bemmodule.c',
                             input : ['src/bem.f90'],
                             output : ['_bemmodule.c'],
                             command: [py3, '-m', 'numpy.f2py',
-			    '@INPUT@', '-m', '_bem', '--lower', '--build-dir', '@OUTDIR@']
+			    '@INPUT@', '-m', '_bem', '--lower', '--build-dir', 'ccblade']
                             )
 
-# Build the extension module
-bem_ext = py3.extension_module('_bem',
-                ['src/bem.f90', bem_source, fortranobject_c],
+py3.extension_module('_bem',
+                    'src/bem.f90',
+                bem_source,
+                fortranobject_c,
                 include_directories: inc_np,
                 dependencies : py3_dep,
-                link_language: 'fortran',
+                subdir: 'ccblade',
+		link_language: 'fortran',
                 install : true)
