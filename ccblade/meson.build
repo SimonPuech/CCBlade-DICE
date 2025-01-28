@@ -39,7 +39,7 @@ bem_ext = py3.extension_module('_bem',
                 dependencies : py3_dep,
                 link_language: 'fortran',
                 install : true,
-                install_dir: py3.get_install_dir() / 'ccblade')
+                install_dir: py3.get_install_dir())
 
 # Create ccblade directory if it doesn't exist
 run_command('mkdir', '-p', 'ccblade', check: false)
