@@ -46,7 +46,6 @@ def copy_shared_libraries():
         if os.path.isfile(ext_path) and not ext_path.endswith('.p'):  # Skip .p files
             # Get the extension file name
             ext_name = os.path.basename(ext_path)
-            print(f"DEBUG: Processing extension: {ext_name}")
             
             # Create target directories
             os.makedirs("ccblade", exist_ok=True)
@@ -56,9 +55,7 @@ def copy_shared_libraries():
             target_path = os.path.join("ccblade", ext_name)
             build_target = os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade", ext_name)
             
-            print(f"DEBUG: Copying to source dir: {target_path}")
             shutil.copy2(ext_path, target_path)
-            print(f"DEBUG: Copying to build dir: {build_target}")
             shutil.copy2(ext_path, build_target)
             
             # Also copy to wheel build directory if it exists
@@ -66,19 +63,15 @@ def copy_shared_libraries():
             if os.path.exists(os.path.dirname(wheel_dir)):
                 os.makedirs(wheel_dir, exist_ok=True)
                 wheel_target = os.path.join(wheel_dir, ext_name)
-                print(f"DEBUG: Copying to wheel dir: {wheel_target}")
                 shutil.copy2(ext_path, wheel_target)
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
         setuptools.Extension.__init__(self, name, sources=[], **kwa)
         self.sourcedir = os.path.abspath(sourcedir)
-        print(f"DEBUG: MesonExtension sourcedir: {self.sourcedir}")
 
 class MesonBuildExt(build_ext):
     def build_extension(self, ext):
-        print(f"DEBUG: Building extension: {ext.name}")
-        print(f"DEBUG: Current directory: {os.getcwd()}")
         
         if not isinstance(ext, MesonExtension):
             super().build_extension(ext)
@@ -99,7 +92,6 @@ class MesonBuildExt(build_ext):
 
         purelibdir = self.get_ext_fullpath(ext.name)
         purelibdir = os.path.dirname(purelibdir)
-        print(f"DEBUG: purelibdir: {purelibdir}")
 
         configure_call = [
             "meson", "setup", staging_dir, "--wipe",
@@ -108,13 +100,11 @@ class MesonBuildExt(build_ext):
             f"-Dpython.platlibdir={purelibdir}"
         ] + meson_args.split()
         configure_call = [m for m in configure_call if m.strip() != ""]
-        print(f"DEBUG: configure_call: {configure_call}")
 
         build_call = ["meson", "compile", "-vC", staging_dir]
         install_call = ["meson", "install", "-C", staging_dir]
 
         self.build_temp = build_dir
-        print(f"DEBUG: build_temp: {self.build_temp}")
         
         self.spawn(configure_call)
         self.spawn(build_call)
@@ -122,7 +112,6 @@ class MesonBuildExt(build_ext):
         copy_shared_libraries()
 
 if __name__ == "__main__":
-    print("DEBUG: Starting setup")
     setuptools.setup(
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
@@ -136,4 +125,3 @@ if __name__ == "__main__":
             'openmdao>=3.2.0'
         ],
     )
-    print("DEBUG: Setup completed")
