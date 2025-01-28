@@ -33,7 +33,7 @@ bem_source = custom_target('bemmodule.c',
                             )
 
 # Build the extension module
-bem_ext = py3.extension_module('_bem',
+py3.extension_module('_bem',
                 ['src/bem.f90', bem_source, fortranobject_c],
                 include_directories: inc_np,
                 dependencies : py3_dep,
@@ -41,30 +41,21 @@ bem_ext = py3.extension_module('_bem',
                 link_language: 'fortran',
                 install : true)
 
-# Install to the Python package directory
-install_data(bem_ext,
-            install_dir: py3.get_install_dir() / 'ccblade')
-
-# Get Python extension suffix using a custom target
-suffix = custom_target('get_suffix',
-                      output: 'suffix',
-                      command: [
-                          py3,
-                          '-c',
-                          'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"), end="")'
-                      ],
-                      capture: true)
-
-# Install the extension module
+# Install script to ensure the module is in the right place
 meson.add_install_script('python3', '-c', '''
 import os
 import shutil
-import sysconfig
+import glob
 
-ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
-src = os.path.join("@0@", "ccblade", "_bem" + ext_suffix)
-dst = os.path.join("@CURRENT_SOURCE_DIR@", "ccblade")
-os.makedirs(dst, exist_ok=True)
-if os.path.exists(src):
-    shutil.copy2(src, dst)
-'''.format(meson.current_build_dir()))
+build_dir = os.path.join("@MESON_BUILD_ROOT@", "ccblade")
+install_dir = os.path.join("@MESON_INSTALL_PREFIX@", "ccblade")
+
+os.makedirs(install_dir, exist_ok=True)
+
+# Find and copy the extension module
+for ext_file in glob.glob(os.path.join(build_dir, "_bem.*")):
+    if os.path.isfile(ext_file):
+        dst = os.path.join(install_dir, os.path.basename(ext_file))
+        print(f"Installing {ext_file} -> {dst}")
+        shutil.copy2(ext_file, dst)
+''')
