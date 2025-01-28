@@ -39,7 +39,8 @@ py3.extension_module('_bem',
                 dependencies : py3_dep,
                 subdir: 'ccblade',
                 link_language: 'fortran',
-                install : true)
+                install : true,
+                install_dir: py3.get_install_dir() / 'ccblade')
 
 # Install script to ensure the module is in the right place
 meson.add_install_script('python3', '-c', '''
