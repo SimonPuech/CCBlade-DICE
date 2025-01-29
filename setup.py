@@ -66,9 +66,9 @@ def copy_shared_libraries():
             target_path = os.path.join("ccblade", ext_name)
             build_target = os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade", ext_name)
             
-            print(f"DEBUG:[2] Copying build file {ext_path} -> {target_path}")
+            # print(f"DEBUG:[2] Copying build file {ext_path} -> {target_path}")
             print(f"DEBUG:[2] Copying build file {ext_path} -> {build_target}")
-            shutil.copy2(ext_path, target_path)
+            # shutil.copy2(ext_path, target_path)
             shutil.copy2(ext_path, build_target)
             print(f"DEBUG:[2] current work dir is {os.getcwd()}")
 
