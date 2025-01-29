@@ -59,8 +59,10 @@ class MesonBuildExt(build_ext):
         super().copy_extensions_to_source()
     
     def build_extension(self, ext):
+        
         if not isinstance(ext, MesonExtension):
             super().build_extension(ext)
+            return
 
         else:
 
@@ -82,6 +84,7 @@ class MesonBuildExt(build_ext):
                     os.environ["CC"] = "gcc"
 
             purelibdir = "."
+            purelibdir = os.path.dirname(self.get_ext_fullpath(ext.name))
             configure_call = ["meson", "setup", staging_dir, "--wipe",
                           f"-Dpython.purelibdir={purelibdir}", f"--prefix={build_dir}", 
                           f"-Dpython.platlibdir={purelibdir}"] + meson_args.split()
