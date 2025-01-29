@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "meson>=1.1", "numpy<2.0","ninja","wheel"]
+requires = ["setuptools", "meson>=1.1", "numpy","ninja","wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -41,7 +41,7 @@ classifiers = [  # Optional
 ]
 
 dependencies = [
-  "numpy",
+  "numpy<2.0",
   "scipy",
   "openmdao",
 ]
