@@ -39,12 +39,14 @@ def copy_shared_libraries(purelibdir):
                 print(f"DEBUG:[1] file : {f}")
                 file_path = os.path.join(root, f)
                 new_path = str(file_path).replace(staging_dir + os.sep, "")
+                print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
                 
                 # For venv
                 os.makedirs(os.path.join(this_dir, purelibdir), exist_ok=True)
                 os.makedirs(os.path.join(this_dir, purelibdir,"ccblade"), exist_ok=True)
                 new_path = os.path.join(this_dir, purelibdir, "ccblade", os.path.basename(f))
+                print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
 
 
@@ -96,5 +98,4 @@ if __name__ == "__main__":
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
         ext_modules=[MesonExtension("ccblade", this_dir) ],
-        
     )
