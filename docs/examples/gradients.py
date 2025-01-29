@@ -184,9 +184,9 @@ Tpd = loads['Tp']
 dNp_dr_fd = (Npd - Np) / delta
 dTp_dr_fd = (Tpd - Tp) / delta
 
-print '(analytic) dNp_i/dr_i =', dNp_dr[idx, idx]
-print '(fin diff) dNp_i/dr_i =', dNp_dr_fd[idx]
-print
+print('(analytic) dNp_i/dr_i =', dNp_dr[idx, idx])
+print('(fin diff) dNp_i/dr_i =', dNp_dr_fd[idx])
+print()
 # 7 ----------
 
 
@@ -209,9 +209,9 @@ dT_dprecone_fd = (Td - T) / delta
 dQ_dprecone_fd = (Qd - Q) / delta
 dP_dprecone_fd = (Pd - P) / delta
 
-print '(analytic) dP/dprecone =', dP_dprecone[0, 0]
-print '(fin diff) dP/dprecone =', dP_dprecone_fd[0]
-print
+print('(analytic) dP/dprecone =', dP_dprecone[0, 0])
+print('(fin diff) dP/dprecone =', dP_dprecone_fd[0])
+print()
 # 8 ----------
 
 
@@ -235,7 +235,7 @@ dT_dr_fd = (Td - T) / delta
 dQ_dr_fd = (Qd - Q) / delta
 dP_dr_fd = (Pd - P) / delta
 
-print '(analytic) dP/dr_i =', dP_dr[0, idx]
-print '(fin diff) dP/dr_i =', dP_dr_fd[0]
-print
+print('(analytic) dP/dr_i =', dP_dr[0, idx])
+print('(fin diff) dP/dr_i =', dP_dr_fd[0])
+print()
 # 9 ----------
