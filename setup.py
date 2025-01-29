@@ -38,40 +38,37 @@ def copy_shared_libraries(purelibdir):
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 print(f"DEBUG:[1] file : {f}")
                 file_path = os.path.join(root, f)
-                new_path = str(file_path).replace(staging_dir + os.sep, "")
+                # new_path = str(file_path).replace(staging_dir + os.sep, "")
+                new_path = os.path.join(this_dir, purelibdir, "ccblade", os.path.basename(f))
                 print(f"DEBUG:[1] Copying build file {file_path} -> {new_path}")
                 print(f"DEBUG:[1] current work dir is {os.getcwd()}")
                 shutil.copy(file_path, new_path)
     
     install_path = os.path.join(this_dir, "build", "lib*", "ccblade")
     
-    print(f"DEBUG: copy_shared_libraries - build_path: {build_path}")
-    print(f"DEBUG: copy_shared_libraries - install_path: {install_path}")
-    print(f"DEBUG: copy_shared_libraries - current dir: {os.getcwd()}")
+    # print(f"DEBUG: copy_shared_libraries - build_path: {build_path}")
+    # print(f"DEBUG: copy_shared_libraries - install_path: {install_path}")
+    # print(f"DEBUG: copy_shared_libraries - current dir: {os.getcwd()}")
     
     # Find all extension files
-    ext_files = glob.glob(os.path.join(build_path, "*.so"))
-    print(f"DEBUG: Found extension files: {ext_files}")
+    # ext_files = glob.glob(os.path.join(build_path, "*.so"))
+    # print(f"DEBUG: Found extension files: {ext_files}")
     
-    for ext_path in ext_files:
-        if os.path.isfile(ext_path):
-            # Get the extension file name
-            ext_name = os.path.basename(ext_path)
+    # for ext_path in ext_files:
+    #     if os.path.isfile(ext_path):
+    #         # Get the extension file name
+    #         ext_name = os.path.basename(ext_path)
             
-            # Create target directories
-            os.makedirs("ccblade", exist_ok=True)
-            print(f"DEBUG: [2] purelibdir : {purelibdir}")
-            os.makedirs(os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade"), exist_ok=True)
+    #         # Create target directories
+    #         os.makedirs("ccblade", exist_ok=True)
+    #         print(f"DEBUG: [2] purelibdir : {purelibdir}")
+    #         os.makedirs(os.path.join(this_dir, purelibdir, "ccblade"), exist_ok=True)
             
-            # Copy to both locations
-            target_path = os.path.join("ccblade", ext_name)
-            build_target = os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade", ext_name)
-            
-            # print(f"DEBUG:[2] Copying build file {ext_path} -> {target_path}")
-            print(f"DEBUG:[2] Copying build file {ext_path} -> {build_target}")
-            # shutil.copy2(ext_path, target_path)
-            shutil.copy2(ext_path, build_target)
-            print(f"DEBUG:[2] current work dir is {os.getcwd()}")
+
+    #         build_target = os.path.join(this_dir, purelibdir, "ccblade", ext_name)
+    #         print(f"DEBUG:[2] Copying build file {ext_path} -> {build_target}")
+    #         shutil.copy2(ext_path, build_target)
+    #         print(f"DEBUG:[2] current work dir is {os.getcwd()}")
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
