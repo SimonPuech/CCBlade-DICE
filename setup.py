@@ -96,4 +96,5 @@ if __name__ == "__main__":
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
         ext_modules=[MesonExtension("ccblade", this_dir) ],
+        
     )
