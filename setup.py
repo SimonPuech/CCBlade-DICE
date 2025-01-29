@@ -116,8 +116,8 @@ if __name__ == "__main__":
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
         ext_modules=[MesonExtension("ccblade", this_dir)],
-        package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
-        include_package_data=True,
+        # package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
+        # include_package_data=True,
         packages=['ccblade'],
         # install_requires=[
         #     'numpy>=1.19.0',
