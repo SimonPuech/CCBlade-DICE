@@ -25,10 +25,6 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 staging_dir = os.path.join(this_dir, "meson_build")
 build_dir = os.path.join(this_dir, "build")
 
-print(f"DEBUG: Current directory: {os.getcwd()}")
-print(f"DEBUG: this_dir: {this_dir}")
-print(f"DEBUG: staging_dir: {staging_dir}")
-print(f"DEBUG: build_dir: {build_dir}")
 
 def copy_shared_libraries(purelibdir):
     build_path = os.path.join(staging_dir, "ccblade")
@@ -36,39 +32,9 @@ def copy_shared_libraries(purelibdir):
     for root, _dirs, files in os.walk(build_path):
         for f in files:
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
-                print(f"DEBUG:[1] file : {f}")
                 file_path = os.path.join(root, f)
-                # new_path = str(file_path).replace(staging_dir + os.sep, "")
                 new_path = os.path.join(this_dir, purelibdir, "ccblade", os.path.basename(f))
-                print(f"DEBUG:[1] Copying build file {file_path} -> {new_path}")
-                print(f"DEBUG:[1] current work dir is {os.getcwd()}")
                 shutil.copy(file_path, new_path)
-    
-    install_path = os.path.join(this_dir, "build", "lib*", "ccblade")
-    
-    # print(f"DEBUG: copy_shared_libraries - build_path: {build_path}")
-    # print(f"DEBUG: copy_shared_libraries - install_path: {install_path}")
-    # print(f"DEBUG: copy_shared_libraries - current dir: {os.getcwd()}")
-    
-    # Find all extension files
-    # ext_files = glob.glob(os.path.join(build_path, "*.so"))
-    # print(f"DEBUG: Found extension files: {ext_files}")
-    
-    # for ext_path in ext_files:
-    #     if os.path.isfile(ext_path):
-    #         # Get the extension file name
-    #         ext_name = os.path.basename(ext_path)
-            
-    #         # Create target directories
-    #         os.makedirs("ccblade", exist_ok=True)
-    #         print(f"DEBUG: [2] purelibdir : {purelibdir}")
-    #         os.makedirs(os.path.join(this_dir, purelibdir, "ccblade"), exist_ok=True)
-            
-
-    #         build_target = os.path.join(this_dir, purelibdir, "ccblade", ext_name)
-    #         print(f"DEBUG:[2] Copying build file {ext_path} -> {build_target}")
-    #         shutil.copy2(ext_path, build_target)
-    #         print(f"DEBUG:[2] current work dir is {os.getcwd()}")
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
@@ -95,8 +61,7 @@ class MesonBuildExt(build_ext):
             if "CC" not in os.environ:
                 os.environ["CC"] = "gcc"
 
-        purelibdir = self.get_ext_fullpath(ext.name)
-        purelibdir = os.path.dirname(purelibdir)
+        purelibdir = os.path.dirname(self.get_ext_fullpath(ext.name))
 
         configure_call = [
             "meson", "setup", staging_dir, "--wipe",
@@ -107,28 +72,16 @@ class MesonBuildExt(build_ext):
         configure_call = [m for m in configure_call if m.strip() != ""]
 
         build_call = ["meson", "compile", "-vC", staging_dir]
-        # install_call = ["meson", "install", "-C", staging_dir]
 
         self.build_temp = build_dir
-        print(f"DEBUG:[0] staging_dir : {staging_dir}")
-        print(f"DEBUG:[0] build_dir : {build_dir}")
         
         self.spawn(configure_call)
         self.spawn(build_call)
-        # self.spawn(install_call)
         copy_shared_libraries(purelibdir)
 
 if __name__ == "__main__":
     setuptools.setup(
         cmdclass={"bdist_wheel": bdist_wheel, "build_ext": MesonBuildExt},
         distclass=BinaryDistribution,
-        ext_modules=[MesonExtension("ccblade", this_dir)],
-        # package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
-        # include_package_data=True,
-        # packages=['ccblade'],
-        # install_requires=[
-        #     'numpy>=1.19.0',
-        #     'scipy>=1.6.0',
-        #     'openmdao>=3.2.0'
-        # ],
+        ext_modules=[MesonExtension("ccblade", this_dir) ],
     )
