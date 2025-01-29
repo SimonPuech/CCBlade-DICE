@@ -30,7 +30,7 @@ print(f"DEBUG: this_dir: {this_dir}")
 print(f"DEBUG: staging_dir: {staging_dir}")
 print(f"DEBUG: build_dir: {build_dir}")
 
-def copy_shared_libraries():
+def copy_shared_libraries(purelibdir):
     build_path = os.path.join(staging_dir, "ccblade")
     
     for root, _dirs, files in os.walk(build_path):
@@ -60,6 +60,7 @@ def copy_shared_libraries():
             
             # Create target directories
             os.makedirs("ccblade", exist_ok=True)
+            print(f"DEBUG: [2] purelibdir : {purelibdir}")
             os.makedirs(os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade"), exist_ok=True)
             
             # Copy to both locations
@@ -97,7 +98,8 @@ class MesonBuildExt(build_ext):
             if "CC" not in os.environ:
                 os.environ["CC"] = "gcc"
 
-        purelibdir = '.'
+        purelibdir = self.get_ext_fullpath(ext.name)
+        purelibdir = os.path.dirname(purelibdir)
 
         configure_call = [
             "meson", "setup", staging_dir, "--wipe",
@@ -117,7 +119,7 @@ class MesonBuildExt(build_ext):
         self.spawn(configure_call)
         self.spawn(build_call)
         # self.spawn(install_call)
-        copy_shared_libraries()
+        copy_shared_libraries(purelibdir)
 
 if __name__ == "__main__":
     setuptools.setup(
