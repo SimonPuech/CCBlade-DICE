@@ -34,8 +34,8 @@ def copy_shared_libraries():
                 print(f"Copying build file {file_path} -> {new_path}")
                 build_target = os.path.join(build_dir, f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_implementation().lower()}-{platform.python_version_tuple()[0]}{platform.python_version_tuple()[1]}", "ccblade", file_path)
 
-                shutil.copy(file_path, new_path)
-                shutil.copy2(file_path, build_target)
+                shutil.copy2(file_path, new_path)
+                # shutil.copy2(file_path, build_target)
                 
                 ext_name = os.path.basename(file_path)
                 wheel_dir = os.path.join(build_dir, f"bdist.{platform.system().lower()}-{platform.machine()}", "wheel", "ccblade")
