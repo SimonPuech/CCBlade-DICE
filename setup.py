@@ -118,7 +118,7 @@ if __name__ == "__main__":
         ext_modules=[MesonExtension("ccblade", this_dir)],
         # package_data={'ccblade': ['*.so', '*.pyd', '*.dll']},
         # include_package_data=True,
-        packages=['ccblade'],
+        # packages=['ccblade'],
         # install_requires=[
         #     'numpy>=1.19.0',
         #     'scipy>=1.6.0',
