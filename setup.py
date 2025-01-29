@@ -39,6 +39,7 @@ def copy_shared_libraries(purelibdir):
                 print(f"DEBUG:[1] file : {f}")
                 file_path = os.path.join(root, f)
                 new_path = str(file_path).replace(staging_dir + os.sep, "")
+                print(f"DEBUG:[1] current work dir: {os.getcwd()}")
                 print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
                 
