@@ -33,6 +33,13 @@ def copy_shared_libraries():
                 new_path = str(file_path).replace(staging_dir + os.sep, "")
                 print(f"Copying build file {file_path} -> {new_path}")
                 shutil.copy(file_path, new_path)
+                
+                ext_name = os.path.basename(file_path)
+                wheel_dir = os.path.join(build_dir, "bdist.linux-x86_64", "wheel", "ccblade")
+                if os.path.exists(os.path.dirname(wheel_dir)):
+                    os.makedirs(wheel_dir, exist_ok=True)
+                    wheel_target = os.path.join(wheel_dir, ext_name)
+                    shutil.copy2(file_path, wheel_target)
 
 #######
 class MesonExtension(setuptools.Extension):
