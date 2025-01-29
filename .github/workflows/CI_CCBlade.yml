@@ -112,3 +112,80 @@ jobs:
                   cd test
                   pytest .
 
+# adding a test to see if the installation via pip works
+
+    build_venv:
+      name: venv Build (${{ matrix.os }}) - ${{ matrix.python-version }}
+      runs-on: ${{ matrix.os }}
+      defaults:
+          run:
+              shell: bash -el {0}
+              
+      strategy:
+          fail-fast: false #true
+          matrix:
+              os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
+              python-version: ["3.9", "3.10", "3.11"]
+
+      steps:
+          - name: checkout repository
+            uses: actions/checkout@v4
+
+          - uses: actions/setup-python@v5
+            with:
+                python-version: ${{ matrix.python-version }}
+
+          - name: Add dependencies windows specific
+            if: contains( matrix.os, 'windows')
+            run: |
+                pip install -y m2w64-toolchain libpython
+                
+          - name: Add dependencies mac specific
+            if: contains( matrix.os, 'mac')
+            run: |
+                pip install -y compilers
+                gfortran --version
+
+          # Install 
+          - name: Debug
+            run: |
+                pip list
+                printenv
+
+          #- name: Setup tmate session
+          #  uses: mxschmitt/action-tmate@v3
+          #  with:
+          #      detached: true
+          #  if: contains( matrix.os, 'windows')
+                  
+          # Install 
+          - name: Pip Install CCBlade
+            env:
+                MESON_ARGS: ""
+            run: |
+                python setup.py develop
+
+          - name: Test run
+            run: |
+                cd test
+                pytest .
+    
+    tmp_build_venv_310:
+        name: venv Build 3.10
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout repository
+              uses: actions/checkout@v4
+
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: 3.10
+
+            - name: Pip Install CCBlade
+              run: |
+                  pip install -e .[test]
+
+            - name: Test run
+              run: |
+                  cd test
+                  pytest .
