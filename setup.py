@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import os
+import sys
 import shutil
 import platform
 import setuptools
 from setuptools.command.build_ext import build_ext
 import glob
-from distutils.util import get_platform
-import sys
 
 #######
 # This forces wheels to be platform specific
@@ -41,27 +40,27 @@ def copy_shared_libraries():
     print(f"DEBUG: copy_shared_libraries - current dir: {os.getcwd()}")
     
     # Find all extension files
-    ext_files = glob.glob(os.path.join(build_path, "_bem.*"))
+    ext_files = glob.glob(os.path.join(build_path, "*.so"))
     print(f"DEBUG: Found extension files: {ext_files}")
     
     for ext_path in ext_files:
-        if os.path.isfile(ext_path) and not ext_path.endswith('.p'):  # Skip .p files
+        if os.path.isfile(ext_path):
             # Get the extension file name
             ext_name = os.path.basename(ext_path)
             
-            # Get platform-specific library directory name
-            lib_dir = f"lib.{get_platform()}-{sys.version[:3]}"
-            os.makedirs(os.path.join(build_dir, lib_dir, "ccblade"), exist_ok=True)
+            # Create target directories
+            os.makedirs("ccblade", exist_ok=True)
+            os.makedirs(os.path.join(build_dir, f"lib.{platform.platform()}-cpython-{sys.version[:3]}", "ccblade"), exist_ok=True)
             
             # Copy to both locations
             target_path = os.path.join("ccblade", ext_name)
-            build_target = os.path.join(build_dir, lib_dir, "ccblade", ext_name)
+            build_target = os.path.join(build_dir, f"lib.{platform.platform()}-cpython-{sys.version[:3]}", "ccblade", ext_name)
             
             shutil.copy2(ext_path, target_path)
             shutil.copy2(ext_path, build_target)
             
             # Also copy to wheel build directory if it exists
-            wheel_dir = os.path.join(build_dir, f"bdist.{get_platform()}", "wheel", "ccblade")
+            wheel_dir = os.path.join(build_dir, f"bdist.{platform.platform()}", "wheel", "ccblade")
             if os.path.exists(os.path.dirname(wheel_dir)):
                 os.makedirs(wheel_dir, exist_ok=True)
                 wheel_target = os.path.join(wheel_dir, ext_name)
