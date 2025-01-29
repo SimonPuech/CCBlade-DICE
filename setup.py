@@ -71,15 +71,6 @@ def copy_shared_libraries():
             shutil.copy2(ext_path, target_path)
             shutil.copy2(ext_path, build_target)
             print(f"DEBUG:[2] current work dir is {os.getcwd()}")
-            
-            # Also copy to wheel build directory if it exists
-            wheel_dir = os.path.join(build_dir, "bdist.linux-x86_64", "wheel", "ccblade")
-            if os.path.exists(os.path.dirname(wheel_dir)):
-                os.makedirs(wheel_dir, exist_ok=True)
-                wheel_target = os.path.join(wheel_dir, ext_name)
-                print(f"DEBUG:[3] Copying build file {ext_path} -> {wheel_target}")
-                shutil.copy2(ext_path, wheel_target)
-                print(f"DEBUG:[3] current work dir is {os.getcwd()}")
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
