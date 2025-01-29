@@ -97,8 +97,7 @@ class MesonBuildExt(build_ext):
             if "CC" not in os.environ:
                 os.environ["CC"] = "gcc"
 
-        purelibdir = self.get_ext_fullpath(ext.name)
-        purelibdir = os.path.dirname(purelibdir)
+        purelibdir = '.'
 
         configure_call = [
             "meson", "setup", staging_dir, "--wipe",
