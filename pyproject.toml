@@ -42,7 +42,7 @@ classifiers = [  # Optional
 
 dependencies = [
   "numpy<2.0",
-  "scipy",
+  "scipy<1.14",
   "openmdao",
 ]
 
