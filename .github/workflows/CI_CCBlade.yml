@@ -172,7 +172,7 @@ jobs:
                 source ./../venv/bin/activate && pytest .
     
     tmp_build_venv_310:
-        name: venv Build 3.10
+        name: tmp build venv 3.10
         runs-on: ubuntu-latest
         steps:
             - name: checkout repository
@@ -185,9 +185,8 @@ jobs:
             - name: Pip Install CCBlade
               run: |
                   python -m venv venv
-                  source venv/bin/activate && python setup.py develop
-
+                  source venv/bin/activate && pip install .[test]
             - name: Test run
               run: |
                   cd test
-                  pytest .
+                  source ./../venv/bin/activate && pytest .

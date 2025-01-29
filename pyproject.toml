@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "meson>=1.1", "numpy","ninja","wheel"]
+requires = ["setuptools", "meson>=1.1", "numpy<2.0","ninja","wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
