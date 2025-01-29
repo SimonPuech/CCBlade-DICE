@@ -36,11 +36,11 @@ def copy_shared_libraries():
     for root, _dirs, files in os.walk(build_path):
         for f in files:
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
-                print(f"DEBUG: FOR loop 1 - file : {f}")
+                print(f"DEBUG:[1] file : {f}")
                 file_path = os.path.join(root, f)
                 new_path = str(file_path).replace(staging_dir + os.sep, "")
-                print(f"Copying build file {file_path} -> {new_path}")
-                print(f"DEBUG: current work dir is {os.getcwd()}")
+                print(f"DEBUG:[1] Copying build file {file_path} -> {new_path}")
+                print(f"DEBUG:[1] current work dir is {os.getcwd()}")
                 shutil.copy(file_path, new_path)
     
     install_path = os.path.join(this_dir, "build", "lib*", "ccblade")
@@ -66,20 +66,20 @@ def copy_shared_libraries():
             target_path = os.path.join("ccblade", ext_name)
             build_target = os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade", ext_name)
             
-            print(f"Copying build file {ext_path} -> {target_path}")
-            print(f"Copying build file {ext_path} -> {build_target}")
+            print(f"DEBUG:[2] Copying build file {ext_path} -> {target_path}")
+            print(f"DEBUG:[2] Copying build file {ext_path} -> {build_target}")
             shutil.copy2(ext_path, target_path)
             shutil.copy2(ext_path, build_target)
-            print(f"DEBUG: current work dir is {os.getcwd()}")
+            print(f"DEBUG:[2] current work dir is {os.getcwd()}")
             
             # Also copy to wheel build directory if it exists
             wheel_dir = os.path.join(build_dir, "bdist.linux-x86_64", "wheel", "ccblade")
             if os.path.exists(os.path.dirname(wheel_dir)):
                 os.makedirs(wheel_dir, exist_ok=True)
                 wheel_target = os.path.join(wheel_dir, ext_name)
-                print(f"Copying build file {ext_path} -> {wheel_target}")
+                print(f"DEBUG:[3] Copying build file {ext_path} -> {wheel_target}")
                 shutil.copy2(ext_path, wheel_target)
-                print(f"DEBUG: current work dir is {os.getcwd()}")
+                print(f"DEBUG:[3] current work dir is {os.getcwd()}")
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
