@@ -25,6 +25,10 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 staging_dir = os.path.join(this_dir, "meson_build")
 build_dir = os.path.join(this_dir, "build")
 
+print(f"DEBUG: Current directory: {os.getcwd()}")
+print(f"DEBUG: this_dir: {this_dir}")
+print(f"DEBUG: staging_dir: {staging_dir}")
+print(f"DEBUG: build_dir: {build_dir}")
 
 def copy_shared_libraries(purelibdir):
     build_path = os.path.join(staging_dir, "ccblade")
@@ -32,9 +36,17 @@ def copy_shared_libraries(purelibdir):
     for root, _dirs, files in os.walk(build_path):
         for f in files:
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
+                print(f"DEBUG:[1] file : {f}")
                 file_path = os.path.join(root, f)
+                new_path = str(file_path).replace(staging_dir + os.sep, "")
+                shutil.copy(file_path, new_path)
+                
+                # For venv
+                os.makedirs(os.path.join(this_dir, purelibdir), exist_ok=True)
+                os.makedirs(os.path.join(this_dir, purelibdir,"ccblade"), exist_ok=True)
                 new_path = os.path.join(this_dir, purelibdir, "ccblade", os.path.basename(f))
-                shutil.copy2(file_path, new_path)
+                shutil.copy(file_path, new_path)
+
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
