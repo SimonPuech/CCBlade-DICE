@@ -112,6 +112,8 @@ class MesonBuildExt(build_ext):
         # install_call = ["meson", "install", "-C", staging_dir]
 
         self.build_temp = build_dir
+        print(f"DEBUG:[0] staging_dir : {staging_dir}")
+        print(f"DEBUG:[0] build_dir : {build_dir}")
         
         self.spawn(configure_call)
         self.spawn(build_call)
