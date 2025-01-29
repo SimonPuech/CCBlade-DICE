@@ -5,6 +5,8 @@ import platform
 import setuptools
 from setuptools.command.build_ext import build_ext
 import glob
+from distutils.util import get_platform
+import sys
 
 #######
 # This forces wheels to be platform specific
@@ -47,19 +49,19 @@ def copy_shared_libraries():
             # Get the extension file name
             ext_name = os.path.basename(ext_path)
             
-            # Create target directories
-            os.makedirs("ccblade", exist_ok=True)
-            os.makedirs(os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade"), exist_ok=True)
+            # Get platform-specific library directory name
+            lib_dir = f"lib.{get_platform()}-{sys.version[:3]}"
+            os.makedirs(os.path.join(build_dir, lib_dir, "ccblade"), exist_ok=True)
             
             # Copy to both locations
             target_path = os.path.join("ccblade", ext_name)
-            build_target = os.path.join(build_dir, "lib.linux-x86_64-cpython-310", "ccblade", ext_name)
+            build_target = os.path.join(build_dir, lib_dir, "ccblade", ext_name)
             
             shutil.copy2(ext_path, target_path)
             shutil.copy2(ext_path, build_target)
             
             # Also copy to wheel build directory if it exists
-            wheel_dir = os.path.join(build_dir, "bdist.linux-x86_64", "wheel", "ccblade")
+            wheel_dir = os.path.join(build_dir, f"bdist.{get_platform()}", "wheel", "ccblade")
             if os.path.exists(os.path.dirname(wheel_dir)):
                 os.makedirs(wheel_dir, exist_ok=True)
                 wheel_target = os.path.join(wheel_dir, ext_name)
