@@ -34,7 +34,7 @@ def copy_shared_libraries(purelibdir):
             if f.endswith((".so", ".lib", ".pyd", ".pdb", ".dylib", ".dll")):
                 file_path = os.path.join(root, f)
                 new_path = os.path.join(this_dir, purelibdir, "ccblade", os.path.basename(f))
-                shutil.copy(file_path, new_path)
+                shutil.copy2(file_path, new_path)
 
 class MesonExtension(setuptools.Extension):
     def __init__(self, name, sourcedir="", **kwa):
