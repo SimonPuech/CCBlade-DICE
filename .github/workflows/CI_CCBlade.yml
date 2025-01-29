@@ -163,12 +163,13 @@ jobs:
             env:
                 MESON_ARGS: ""
             run: |
-                python setup.py develop
+                python -m venv venv
+                source venv/bin/activate && python setup.py develop                python setup.py develop
 
           - name: Test run
             run: |
                 cd test
-                pytest .
+                source ./../venv/bin/activate && pytest .
     
     tmp_build_venv_310:
         name: venv Build 3.10
@@ -183,7 +184,8 @@ jobs:
 
             - name: Pip Install CCBlade
               run: |
-                  pip install -e .[test]
+                  python -m venv venv
+                  source venv/bin/activate && python setup.py develop
 
             - name: Test run
               run: |
