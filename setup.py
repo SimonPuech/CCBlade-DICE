@@ -47,7 +47,7 @@ def copy_shared_libraries(purelibdir):
                 os.makedirs(os.path.join(this_dir, purelibdir,"ccblade"), exist_ok=True)
                 new_path = os.path.join(this_dir, purelibdir, "ccblade", os.path.basename(f))
                 print(f"Copying build file {file_path} -> {new_path}")
-                shutil.copy(file_path, new_path)
+                shutil.copy(os.path.join(root, f), new_path)
 
 
 class MesonExtension(setuptools.Extension):
