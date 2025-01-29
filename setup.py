@@ -102,13 +102,13 @@ class MesonBuildExt(build_ext):
         configure_call = [m for m in configure_call if m.strip() != ""]
 
         build_call = ["meson", "compile", "-vC", staging_dir]
-        install_call = ["meson", "install", "-C", staging_dir]
+        # install_call = ["meson", "install", "-C", staging_dir]
 
         self.build_temp = build_dir
         
         self.spawn(configure_call)
         self.spawn(build_call)
-        self.spawn(install_call)
+        # self.spawn(install_call)
         copy_shared_libraries()
 
 if __name__ == "__main__":
