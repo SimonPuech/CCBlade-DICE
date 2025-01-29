@@ -32,7 +32,7 @@ def copy_shared_libraries():
                 file_path = os.path.join(root, f)
                 new_path = str(file_path).replace(staging_dir + os.sep, "")
                 print(f"Copying build file {file_path} -> {new_path}")
-                build_target = os.path.join(build_dir, f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_implementation().lower()}-{platform.python_version_tuple()[0]}{platform.python_version_tuple()[1]}", "ccblade", ext_name)
+                build_target = os.path.join(build_dir, f"lib.{platform.system().lower()}-{platform.machine()}-{platform.python_implementation().lower()}-{platform.python_version_tuple()[0]}{platform.python_version_tuple()[1]}", "ccblade", file_path)
 
                 shutil.copy(file_path, new_path)
                 shutil.copy2(file_path, build_target)
